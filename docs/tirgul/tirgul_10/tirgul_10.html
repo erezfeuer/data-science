@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Introduction to Data Science - 13&nbsp; Decision trees</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<link href="../../tirgul/tirgul_9/regularized_regression.html" rel="prev">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+</head>
+
+<body class="nav-sidebar floating">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+      <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../../tirgul/tirgul_1/tutorial_1.html">Tirgul</a></li><li class="breadcrumb-item"><a href="../../tirgul/tirgul_10/tirgul_10.html"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Decision trees</span></a></li></ol></nav>
+      <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+      </a>
+      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">Introduction to Data Science</a> 
+        <div class="sidebar-tools-main">
+    <a href="https://github.com/ErezFeuer/data-science/" rel="" title="Source Code" class="quarto-navigation-tool px-1" aria-label="Source Code"><i class="bi bi-github"></i></a>
+</div>
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">71253</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
+ <span class="menu-text">Tirgul</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../tirgul/tirgul_1/tutorial_1.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Tutorial 1</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../tirgul/tirgul_2/tirgul_2.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Tutorial 2</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../tirgul/tirgul_3/tirgul_3.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Tutorial 3</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../tirgul/tirgul_4/tirgul_4.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Tutorial 4</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../tirgul/tirgul_5/tirgul_5.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Tutorial 5</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../tirgul/tirgul_6/tirgul_6.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Tutorial 6</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../tirgul/tirgul_7/tirgul_7.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Tutorial 7</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../tirgul/tirgul_6/group_by.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Groupby</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../tirgul/tirgul_8/bonferroni.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">9</span>&nbsp; <span class="chapter-title">Multiple hypothesis correction</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../tirgul/tirgul_8/logistic_regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">10</span>&nbsp; <span class="chapter-title">Logistic regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../tirgul/tirgul_9/multiple_regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">11</span>&nbsp; <span class="chapter-title">Multiple linear regression</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../tirgul/tirgul_9/regularized_regression.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Regularization</span></span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../tirgul/tirgul_10/tirgul_10.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Decision trees</span></span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar,#quarto-sidebar-glass"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#regression-example-predicting-california-house-prices" id="toc-regression-example-predicting-california-house-prices" class="nav-link active" data-scroll-target="#regression-example-predicting-california-house-prices"><span class="header-section-number">13.1</span> Regression example – predicting California house prices</a></li>
+  <li><a href="#ensembles-random-forest-built-in-feature-importance" id="toc-ensembles-random-forest-built-in-feature-importance" class="nav-link" data-scroll-target="#ensembles-random-forest-built-in-feature-importance"><span class="header-section-number">13.2</span> Ensembles – Random-Forest &amp; built-in feature importance</a>
+  <ul class="collapse">
+  <li><a href="#permutation-importance-a-performance-based-metric" id="toc-permutation-importance-a-performance-based-metric" class="nav-link" data-scroll-target="#permutation-importance-a-performance-based-metric"><span class="header-section-number">13.2.1</span> Permutation importance – a performance-based metric</a></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title"><span class="chapter-number">13</span>&nbsp; <span class="chapter-title">Decision trees</span></h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source" data-quarto-source-url="https://github.com/ErezFeuer/data-science/blob/main/tirgul/tirgul_10/tirgul_10.ipynb"><i class="bi"></i> Code</button></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<div class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-3"><a href="#cb1-3"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="im">from</span> sklearn.tree <span class="im">import</span> DecisionTreeClassifier, DecisionTreeRegressor, plot_tree</span>
+<span id="cb1-6"><a href="#cb1-6"></a><span class="im">from</span> sklearn.ensemble <span class="im">import</span> RandomForestClassifier, RandomForestRegressor</span>
+<span id="cb1-7"><a href="#cb1-7"></a><span class="im">from</span> sklearn.model_selection <span class="im">import</span> train_test_split, GridSearchCV, cross_val_score</span>
+<span id="cb1-8"><a href="#cb1-8"></a><span class="im">from</span> sklearn.metrics <span class="im">import</span> (accuracy_score, confusion_matrix, ConfusionMatrixDisplay,</span>
+<span id="cb1-9"><a href="#cb1-9"></a>                             mean_squared_error, r2_score)</span>
+<span id="cb1-10"><a href="#cb1-10"></a></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>We’ll use the <strong>Palmer Penguins</strong> dataset (a friendlier drop-in replacement for Iris).<br>
+Goal : predict whether a penguin is <em>Adelie</em> (<code>1</code>) or another species (<code>0</code>) with a shallow decision-tree and examine its performance.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1"></a><span class="co"># load dataset</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>penguins <span class="op">=</span> sns.load_dataset(<span class="st">"penguins"</span>).dropna()</span>
+<span id="cb2-3"><a href="#cb2-3"></a>penguins</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="4">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">species</th>
+<th data-quarto-table-cell-role="th">island</th>
+<th data-quarto-table-cell-role="th">bill_length_mm</th>
+<th data-quarto-table-cell-role="th">bill_depth_mm</th>
+<th data-quarto-table-cell-role="th">flipper_length_mm</th>
+<th data-quarto-table-cell-role="th">body_mass_g</th>
+<th data-quarto-table-cell-role="th">sex</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>Adelie</td>
+<td>Torgersen</td>
+<td>39.1</td>
+<td>18.7</td>
+<td>181.0</td>
+<td>3750.0</td>
+<td>Male</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>Adelie</td>
+<td>Torgersen</td>
+<td>39.5</td>
+<td>17.4</td>
+<td>186.0</td>
+<td>3800.0</td>
+<td>Female</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>Adelie</td>
+<td>Torgersen</td>
+<td>40.3</td>
+<td>18.0</td>
+<td>195.0</td>
+<td>3250.0</td>
+<td>Female</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">4</td>
+<td>Adelie</td>
+<td>Torgersen</td>
+<td>36.7</td>
+<td>19.3</td>
+<td>193.0</td>
+<td>3450.0</td>
+<td>Female</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">5</td>
+<td>Adelie</td>
+<td>Torgersen</td>
+<td>39.3</td>
+<td>20.6</td>
+<td>190.0</td>
+<td>3650.0</td>
+<td>Male</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">338</td>
+<td>Gentoo</td>
+<td>Biscoe</td>
+<td>47.2</td>
+<td>13.7</td>
+<td>214.0</td>
+<td>4925.0</td>
+<td>Female</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">340</td>
+<td>Gentoo</td>
+<td>Biscoe</td>
+<td>46.8</td>
+<td>14.3</td>
+<td>215.0</td>
+<td>4850.0</td>
+<td>Female</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">341</td>
+<td>Gentoo</td>
+<td>Biscoe</td>
+<td>50.4</td>
+<td>15.7</td>
+<td>222.0</td>
+<td>5750.0</td>
+<td>Male</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">342</td>
+<td>Gentoo</td>
+<td>Biscoe</td>
+<td>45.2</td>
+<td>14.8</td>
+<td>212.0</td>
+<td>5200.0</td>
+<td>Female</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">343</td>
+<td>Gentoo</td>
+<td>Biscoe</td>
+<td>49.9</td>
+<td>16.1</td>
+<td>213.0</td>
+<td>5400.0</td>
+<td>Male</td>
+</tr>
+</tbody>
+</table>
+
+<p>333 rows × 7 columns</p>
+</div>
+</div>
+</div>
+<div class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1"></a><span class="co"># make binary target: 1 = adelie, 0 = other</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a>penguins[<span class="st">"is_adelie"</span>] <span class="op">=</span> (penguins[<span class="st">"species"</span>] <span class="op">==</span> <span class="st">"Adelie"</span>).astype(<span class="bu">int</span>)</span>
+<span id="cb3-3"><a href="#cb3-3"></a>y <span class="op">=</span> penguins[<span class="st">"is_adelie"</span>]</span>
+<span id="cb3-4"><a href="#cb3-4"></a>y</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="6">
+<pre><code>0      1
+1      1
+2      1
+4      1
+5      1
+      ..
+338    0
+340    0
+341    0
+342    0
+343    0
+Name: is_adelie, Length: 333, dtype: int64</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1"></a><span class="co"># one-hot encode remaining categoricals</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a>X <span class="op">=</span> penguins.drop(columns<span class="op">=</span>[<span class="st">"species"</span>, <span class="st">"is_adelie"</span>])</span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="bu">print</span>(penguins[<span class="st">'island'</span>].unique())</span>
+<span id="cb5-4"><a href="#cb5-4"></a>X <span class="op">=</span> pd.get_dummies(X, drop_first<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb5-5"><a href="#cb5-5"></a></span>
+<span id="cb5-6"><a href="#cb5-6"></a>X</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>['Torgersen' 'Biscoe' 'Dream']</code></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="7">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">bill_length_mm</th>
+<th data-quarto-table-cell-role="th">bill_depth_mm</th>
+<th data-quarto-table-cell-role="th">flipper_length_mm</th>
+<th data-quarto-table-cell-role="th">body_mass_g</th>
+<th data-quarto-table-cell-role="th">island_Dream</th>
+<th data-quarto-table-cell-role="th">island_Torgersen</th>
+<th data-quarto-table-cell-role="th">sex_Male</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>39.1</td>
+<td>18.7</td>
+<td>181.0</td>
+<td>3750.0</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>39.5</td>
+<td>17.4</td>
+<td>186.0</td>
+<td>3800.0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>40.3</td>
+<td>18.0</td>
+<td>195.0</td>
+<td>3250.0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">4</td>
+<td>36.7</td>
+<td>19.3</td>
+<td>193.0</td>
+<td>3450.0</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">5</td>
+<td>39.3</td>
+<td>20.6</td>
+<td>190.0</td>
+<td>3650.0</td>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">338</td>
+<td>47.2</td>
+<td>13.7</td>
+<td>214.0</td>
+<td>4925.0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">340</td>
+<td>46.8</td>
+<td>14.3</td>
+<td>215.0</td>
+<td>4850.0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">341</td>
+<td>50.4</td>
+<td>15.7</td>
+<td>222.0</td>
+<td>5750.0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">342</td>
+<td>45.2</td>
+<td>14.8</td>
+<td>212.0</td>
+<td>5200.0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">343</td>
+<td>49.9</td>
+<td>16.1</td>
+<td>213.0</td>
+<td>5400.0</td>
+<td>0</td>
+<td>0</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+
+<p>333 rows × 7 columns</p>
+</div>
+</div>
+</div>
+<p>Note that originaly there are 3 islands but after applying one-hot encoding, we have binary for only 2 islands. because the third island is the reference category, we don’t need to add a third column for it. If we have 0 for both islands, it means the penguin is from the third island.</p>
+<div class="cell" data-execution_count="20">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1"></a><span class="co"># split train / test</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a>X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(</span>
+<span id="cb7-3"><a href="#cb7-3"></a>    X, y, test_size<span class="op">=</span><span class="fl">0.25</span>, stratify<span class="op">=</span>y, random_state<span class="op">=</span><span class="dv">42</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a>)</span>
+<span id="cb7-5"><a href="#cb7-5"></a></span>
+<span id="cb7-6"><a href="#cb7-6"></a><span class="co"># fit a shallow tree (depth = 3 keeps it interpretable)</span></span>
+<span id="cb7-7"><a href="#cb7-7"></a>clf <span class="op">=</span> DecisionTreeClassifier(max_depth<span class="op">=</span><span class="dv">2</span>, random_state<span class="op">=</span><span class="dv">42</span>)</span>
+<span id="cb7-8"><a href="#cb7-8"></a>clf.fit(X_train, y_train)</span>
+<span id="cb7-9"><a href="#cb7-9"></a></span>
+<span id="cb7-10"><a href="#cb7-10"></a><span class="co"># evaluate</span></span>
+<span id="cb7-11"><a href="#cb7-11"></a>y_pred <span class="op">=</span> clf.predict(X_test)</span>
+<span id="cb7-12"><a href="#cb7-12"></a>acc <span class="op">=</span> accuracy_score(y_test, y_pred)</span>
+<span id="cb7-13"><a href="#cb7-13"></a><span class="bu">print</span>(<span class="ss">f"test accuracy = </span><span class="sc">{</span>acc<span class="sc">:.3f}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>test accuracy = 0.952</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="21">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1"></a><span class="co"># confusion-matrix</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a>fig, ax <span class="op">=</span> plt.subplots()</span>
+<span id="cb9-3"><a href="#cb9-3"></a>ConfusionMatrixDisplay.from_estimator(</span>
+<span id="cb9-4"><a href="#cb9-4"></a>    clf, X_test, y_test, display_labels<span class="op">=</span>[<span class="st">"not Adelie"</span>, <span class="st">"Adelie"</span>],</span>
+<span id="cb9-5"><a href="#cb9-5"></a>    cmap<span class="op">=</span><span class="st">"Blues"</span>, ax<span class="op">=</span>ax</span>
+<span id="cb9-6"><a href="#cb9-6"></a>)</span>
+<span id="cb9-7"><a href="#cb9-7"></a>ax.set_title(<span class="st">"confusion matrix"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="21">
+<pre><code>Text(0.5, 1.0, 'confusion matrix')</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="tirgul_10_files/figure-html/cell-7-output-2.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="cell" data-execution_count="22">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1"></a><span class="co"># tree visualisation</span></span>
+<span id="cb11-2"><a href="#cb11-2"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">12</span>, <span class="dv">7</span>))</span>
+<span id="cb11-3"><a href="#cb11-3"></a>plot_tree(</span>
+<span id="cb11-4"><a href="#cb11-4"></a>    clf,</span>
+<span id="cb11-5"><a href="#cb11-5"></a>    feature_names<span class="op">=</span>X.columns,</span>
+<span id="cb11-6"><a href="#cb11-6"></a>    class_names<span class="op">=</span>[<span class="st">"0"</span>, <span class="st">"1"</span>],</span>
+<span id="cb11-7"><a href="#cb11-7"></a>    filled<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb11-8"><a href="#cb11-8"></a>    impurity<span class="op">=</span><span class="va">True</span>,</span>
+<span id="cb11-9"><a href="#cb11-9"></a>    ax<span class="op">=</span>ax,</span>
+<span id="cb11-10"><a href="#cb11-10"></a>)</span>
+<span id="cb11-11"><a href="#cb11-11"></a>ax.set_title(<span class="st">"decision tree (max_depth = 3)"</span>)</span>
+<span id="cb11-12"><a href="#cb11-12"></a>plt.tight_layout()</span>
+<span id="cb11-13"><a href="#cb11-13"></a></span>
+<span id="cb11-14"><a href="#cb11-14"></a></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="tirgul_10_files/figure-html/cell-8-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="cell" data-execution_count="19">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1"></a><span class="co"># simple 2-D scatter of test predictions for two bill metrics</span></span>
+<span id="cb12-2"><a href="#cb12-2"></a>fig, ax <span class="op">=</span> plt.subplots()</span>
+<span id="cb12-3"><a href="#cb12-3"></a>scatter <span class="op">=</span> ax.scatter(</span>
+<span id="cb12-4"><a href="#cb12-4"></a>    X_test[<span class="st">"bill_length_mm"</span>],</span>
+<span id="cb12-5"><a href="#cb12-5"></a>    X_test[<span class="st">"bill_depth_mm"</span>],</span>
+<span id="cb12-6"><a href="#cb12-6"></a>    c<span class="op">=</span>y_pred,</span>
+<span id="cb12-7"><a href="#cb12-7"></a>    cmap<span class="op">=</span><span class="st">"coolwarm"</span>,</span>
+<span id="cb12-8"><a href="#cb12-8"></a>    edgecolor<span class="op">=</span><span class="st">"k"</span>,</span>
+<span id="cb12-9"><a href="#cb12-9"></a>    alpha<span class="op">=</span><span class="fl">0.7</span>,</span>
+<span id="cb12-10"><a href="#cb12-10"></a>)</span>
+<span id="cb12-11"><a href="#cb12-11"></a>ax.set_xlabel(<span class="st">"bill_length_mm"</span>)</span>
+<span id="cb12-12"><a href="#cb12-12"></a>ax.set_ylabel(<span class="st">"bill_depth_mm"</span>)</span>
+<span id="cb12-13"><a href="#cb12-13"></a>ax.set_title(<span class="st">"test-set predictions (red = Adelie)"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="19">
+<pre><code>Text(0.5, 1.0, 'test-set predictions (red = Adelie)')</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="tirgul_10_files/figure-html/cell-9-output-2.png" class="img-fluid"></p>
+</div>
+</div>
+<section id="regression-example-predicting-california-house-prices" class="level2" data-number="13.1">
+<h2 data-number="13.1" class="anchored" data-anchor-id="regression-example-predicting-california-house-prices"><span class="header-section-number">13.1</span> Regression example – predicting California house prices</h2>
+<p>We’ll switch to a <strong>continuous</strong> target: median house value (<code>MedHouseVal</code>, $ × 100 000) from the built-in <em>California Housing</em> dataset.<br>
+A single decision-tree regressor illustrates over-fitting risk and the effect of depth / leaf constraints.</p>
+<div class="cell" data-execution_count="27">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1"></a><span class="co"># load dataset</span></span>
+<span id="cb14-2"><a href="#cb14-2"></a><span class="im">from</span> sklearn.datasets <span class="im">import</span> fetch_california_housing</span>
+<span id="cb14-3"><a href="#cb14-3"></a></span>
+<span id="cb14-4"><a href="#cb14-4"></a>cal <span class="op">=</span> fetch_california_housing(as_frame<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb14-5"><a href="#cb14-5"></a>X <span class="op">=</span> cal.data</span>
+<span id="cb14-6"><a href="#cb14-6"></a>y <span class="op">=</span> cal.target</span>
+<span id="cb14-7"><a href="#cb14-7"></a></span>
+<span id="cb14-8"><a href="#cb14-8"></a>X</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="27">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">MedInc</th>
+<th data-quarto-table-cell-role="th">HouseAge</th>
+<th data-quarto-table-cell-role="th">AveRooms</th>
+<th data-quarto-table-cell-role="th">AveBedrms</th>
+<th data-quarto-table-cell-role="th">Population</th>
+<th data-quarto-table-cell-role="th">AveOccup</th>
+<th data-quarto-table-cell-role="th">Latitude</th>
+<th data-quarto-table-cell-role="th">Longitude</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>8.3252</td>
+<td>41.0</td>
+<td>6.984127</td>
+<td>1.023810</td>
+<td>322.0</td>
+<td>2.555556</td>
+<td>37.88</td>
+<td>-122.23</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>8.3014</td>
+<td>21.0</td>
+<td>6.238137</td>
+<td>0.971880</td>
+<td>2401.0</td>
+<td>2.109842</td>
+<td>37.86</td>
+<td>-122.22</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>7.2574</td>
+<td>52.0</td>
+<td>8.288136</td>
+<td>1.073446</td>
+<td>496.0</td>
+<td>2.802260</td>
+<td>37.85</td>
+<td>-122.24</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>5.6431</td>
+<td>52.0</td>
+<td>5.817352</td>
+<td>1.073059</td>
+<td>558.0</td>
+<td>2.547945</td>
+<td>37.85</td>
+<td>-122.25</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>3.8462</td>
+<td>52.0</td>
+<td>6.281853</td>
+<td>1.081081</td>
+<td>565.0</td>
+<td>2.181467</td>
+<td>37.85</td>
+<td>-122.25</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">20635</td>
+<td>1.5603</td>
+<td>25.0</td>
+<td>5.045455</td>
+<td>1.133333</td>
+<td>845.0</td>
+<td>2.560606</td>
+<td>39.48</td>
+<td>-121.09</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">20636</td>
+<td>2.5568</td>
+<td>18.0</td>
+<td>6.114035</td>
+<td>1.315789</td>
+<td>356.0</td>
+<td>3.122807</td>
+<td>39.49</td>
+<td>-121.21</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">20637</td>
+<td>1.7000</td>
+<td>17.0</td>
+<td>5.205543</td>
+<td>1.120092</td>
+<td>1007.0</td>
+<td>2.325635</td>
+<td>39.43</td>
+<td>-121.22</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">20638</td>
+<td>1.8672</td>
+<td>18.0</td>
+<td>5.329513</td>
+<td>1.171920</td>
+<td>741.0</td>
+<td>2.123209</td>
+<td>39.43</td>
+<td>-121.32</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">20639</td>
+<td>2.3886</td>
+<td>16.0</td>
+<td>5.254717</td>
+<td>1.162264</td>
+<td>1387.0</td>
+<td>2.616981</td>
+<td>39.37</td>
+<td>-121.24</td>
+</tr>
+</tbody>
+</table>
+
+<p>20640 rows × 8 columns</p>
+</div>
+</div>
+</div>
+<div class="cell" data-execution_count="28">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1"></a>y</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="28">
+<pre><code>0        4.526
+1        3.585
+2        3.521
+3        3.413
+4        3.422
+         ...  
+20635    0.781
+20636    0.771
+20637    0.923
+20638    0.847
+20639    0.894
+Name: MedHouseVal, Length: 20640, dtype: float64</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1"></a></span>
+<span id="cb17-2"><a href="#cb17-2"></a></span>
+<span id="cb17-3"><a href="#cb17-3"></a><span class="co"># train/test split</span></span>
+<span id="cb17-4"><a href="#cb17-4"></a>X_train, X_test, y_train, y_test <span class="op">=</span> train_test_split(</span>
+<span id="cb17-5"><a href="#cb17-5"></a>    X, y, test_size<span class="op">=</span><span class="fl">0.25</span>, random_state<span class="op">=</span><span class="dv">42</span></span>
+<span id="cb17-6"><a href="#cb17-6"></a>)</span>
+<span id="cb17-7"><a href="#cb17-7"></a></span>
+<span id="cb17-8"><a href="#cb17-8"></a><span class="co"># fit baseline tree (no depth limit)</span></span>
+<span id="cb17-9"><a href="#cb17-9"></a>reg <span class="op">=</span> DecisionTreeRegressor(random_state<span class="op">=</span><span class="dv">42</span>)</span>
+<span id="cb17-10"><a href="#cb17-10"></a>reg.fit(X_train, y_train)</span>
+<span id="cb17-11"><a href="#cb17-11"></a></span>
+<span id="cb17-12"><a href="#cb17-12"></a><span class="co"># evaluate</span></span>
+<span id="cb17-13"><a href="#cb17-13"></a>y_pred <span class="op">=</span> reg.predict(X_test)</span>
+<span id="cb17-14"><a href="#cb17-14"></a>rmse <span class="op">=</span> mean_squared_error(y_test, y_pred, squared<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb17-15"><a href="#cb17-15"></a>r2   <span class="op">=</span> r2_score(y_test, y_pred)</span>
+<span id="cb17-16"><a href="#cb17-16"></a><span class="bu">print</span>(<span class="ss">f"baseline tree → RMSE = </span><span class="sc">{</span>rmse<span class="sc">:.3f}</span><span class="ss">, R² = </span><span class="sc">{</span>r2<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb17-17"><a href="#cb17-17"></a></span>
+<span id="cb17-18"><a href="#cb17-18"></a><span class="co"># scatter of true vs predicted</span></span>
+<span id="cb17-19"><a href="#cb17-19"></a>fig, ax <span class="op">=</span> plt.subplots()</span>
+<span id="cb17-20"><a href="#cb17-20"></a>ax.scatter(y_test, y_pred, alpha<span class="op">=</span><span class="fl">0.4</span>, edgecolor<span class="op">=</span><span class="st">"k"</span>)</span>
+<span id="cb17-21"><a href="#cb17-21"></a>ax.plot([y.<span class="bu">min</span>(), y.<span class="bu">max</span>()], [y.<span class="bu">min</span>(), y.<span class="bu">max</span>()], lw<span class="op">=</span><span class="dv">2</span>, ls<span class="op">=</span><span class="st">"--"</span>)</span>
+<span id="cb17-22"><a href="#cb17-22"></a>ax.set_xlabel(<span class="st">"true price"</span>)</span>
+<span id="cb17-23"><a href="#cb17-23"></a>ax.set_ylabel(<span class="st">"predicted price"</span>)</span>
+<span id="cb17-24"><a href="#cb17-24"></a>ax.set_title(<span class="st">"baseline decision-tree regression"</span>)</span>
+<span id="cb17-25"><a href="#cb17-25"></a></span>
+<span id="cb17-26"><a href="#cb17-26"></a><span class="co"># ------------------------------------------------------------</span></span>
+<span id="cb17-27"><a href="#cb17-27"></a><span class="co"># quick hyper-parameter sweep: depth &amp; min_samples_leaf</span></span>
+<span id="cb17-28"><a href="#cb17-28"></a>param_grid <span class="op">=</span> {</span>
+<span id="cb17-29"><a href="#cb17-29"></a>    <span class="st">"max_depth"</span>: [<span class="dv">3</span>, <span class="dv">5</span>, <span class="dv">8</span>, <span class="va">None</span>],</span>
+<span id="cb17-30"><a href="#cb17-30"></a>    <span class="st">"min_samples_leaf"</span>: [<span class="dv">1</span>, <span class="dv">5</span>, <span class="dv">20</span>],</span>
+<span id="cb17-31"><a href="#cb17-31"></a>}</span>
+<span id="cb17-32"><a href="#cb17-32"></a>grid <span class="op">=</span> GridSearchCV(</span>
+<span id="cb17-33"><a href="#cb17-33"></a>    DecisionTreeRegressor(random_state<span class="op">=</span><span class="dv">42</span>),</span>
+<span id="cb17-34"><a href="#cb17-34"></a>    param_grid,</span>
+<span id="cb17-35"><a href="#cb17-35"></a>    cv<span class="op">=</span><span class="dv">5</span>,</span>
+<span id="cb17-36"><a href="#cb17-36"></a>    scoring<span class="op">=</span><span class="st">"neg_root_mean_squared_error"</span>,</span>
+<span id="cb17-37"><a href="#cb17-37"></a>    n_jobs<span class="op">=-</span><span class="dv">1</span>,</span>
+<span id="cb17-38"><a href="#cb17-38"></a>)</span>
+<span id="cb17-39"><a href="#cb17-39"></a>grid.fit(X_train, y_train)</span>
+<span id="cb17-40"><a href="#cb17-40"></a><span class="bu">print</span>(<span class="st">"best params:"</span>, grid.best_params_)</span>
+<span id="cb17-41"><a href="#cb17-41"></a><span class="bu">print</span>(<span class="st">"cv RMSE:"</span>, <span class="op">-</span>grid.best_score_)</span>
+<span id="cb17-42"><a href="#cb17-42"></a></span>
+<span id="cb17-43"><a href="#cb17-43"></a><span class="co"># refit best tree on full training data and re-evaluate</span></span>
+<span id="cb17-44"><a href="#cb17-44"></a>best_reg <span class="op">=</span> grid.best_estimator_</span>
+<span id="cb17-45"><a href="#cb17-45"></a>y_pred_best <span class="op">=</span> best_reg.predict(X_test)</span>
+<span id="cb17-46"><a href="#cb17-46"></a>rmse_best <span class="op">=</span> mean_squared_error(y_test, y_pred_best, squared<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb17-47"><a href="#cb17-47"></a>r2_best   <span class="op">=</span> r2_score(y_test, y_pred_best)</span>
+<span id="cb17-48"><a href="#cb17-48"></a><span class="bu">print</span>(<span class="ss">f"tuned tree → RMSE = </span><span class="sc">{</span>rmse_best<span class="sc">:.3f}</span><span class="ss">, R² = </span><span class="sc">{</span>r2_best<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb17-49"><a href="#cb17-49"></a></span>
+<span id="cb17-50"><a href="#cb17-50"></a><span class="co"># compare baseline vs tuned in one plot</span></span>
+<span id="cb17-51"><a href="#cb17-51"></a>fig, ax <span class="op">=</span> plt.subplots()</span>
+<span id="cb17-52"><a href="#cb17-52"></a>ax.scatter(y_test, y_pred, alpha<span class="op">=</span><span class="fl">0.3</span>, label<span class="op">=</span><span class="st">"baseline"</span>, edgecolor<span class="op">=</span><span class="st">"k"</span>)</span>
+<span id="cb17-53"><a href="#cb17-53"></a>ax.scatter(y_test, y_pred_best, alpha<span class="op">=</span><span class="fl">0.3</span>, label<span class="op">=</span><span class="st">"tuned"</span>, marker<span class="op">=</span><span class="st">"s"</span>, edgecolor<span class="op">=</span><span class="st">"k"</span>)</span>
+<span id="cb17-54"><a href="#cb17-54"></a>ax.plot([y.<span class="bu">min</span>(), y.<span class="bu">max</span>()], [y.<span class="bu">min</span>(), y.<span class="bu">max</span>()], lw<span class="op">=</span><span class="dv">2</span>, ls<span class="op">=</span><span class="st">"--"</span>, color<span class="op">=</span><span class="st">"grey"</span>)</span>
+<span id="cb17-55"><a href="#cb17-55"></a>ax.set_xlabel(<span class="st">"true price"</span>)</span>
+<span id="cb17-56"><a href="#cb17-56"></a>ax.set_ylabel(<span class="st">"predicted price"</span>)</span>
+<span id="cb17-57"><a href="#cb17-57"></a>ax.set_title(<span class="st">"baseline vs tuned tree"</span>)</span>
+<span id="cb17-58"><a href="#cb17-58"></a>ax.legend()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>baseline tree → RMSE = 0.727, R² = 0.601
+best params: {'max_depth': None, 'min_samples_leaf': 20}
+cv RMSE: 0.6138382784769062
+tuned tree → RMSE = 0.611, R² = 0.718</code></pre>
+</div>
+<div class="cell-output cell-output-display" data-execution_count="25">
+<pre><code>&lt;matplotlib.legend.Legend at 0x7febbe428be0&gt;</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="tirgul_10_files/figure-html/cell-12-output-3.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="tirgul_10_files/figure-html/cell-12-output-4.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="ensembles-random-forest-built-in-feature-importance" class="level2" data-number="13.2">
+<h2 data-number="13.2" class="anchored" data-anchor-id="ensembles-random-forest-built-in-feature-importance"><span class="header-section-number">13.2</span> Ensembles – Random-Forest &amp; built-in feature importance</h2>
+<p>A forest averages many decorrelated trees to cut variance.<br>
+We reuse the same training / test splits from Sections&nbsp;1 &amp; 2 and compare:</p>
+<ul>
+<li><strong>Classification:</strong> accuracy boost vs single tree<br>
+</li>
+<li><strong>Regression:</strong> RMSE boost vs single tree<br>
+</li>
+<li><strong>Interpretability:</strong> bar-plot of <code>feature_importances_</code></li>
+</ul>
+<div class="cell" data-execution_count="31">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1"></a><span class="co"># ------------------------------------------------------------------</span></span>
+<span id="cb20-2"><a href="#cb20-2"></a><span class="co"># classification – random-forest on penguins (kept separate from regression data)</span></span>
+<span id="cb20-3"><a href="#cb20-3"></a><span class="co"># ------------------------------------------------------------------</span></span>
+<span id="cb20-4"><a href="#cb20-4"></a>penguins <span class="op">=</span> sns.load_dataset(<span class="st">"penguins"</span>).dropna()</span>
+<span id="cb20-5"><a href="#cb20-5"></a>penguins[<span class="st">"is_adelie"</span>] <span class="op">=</span> (penguins[<span class="st">"species"</span>] <span class="op">==</span> <span class="st">"Adelie"</span>).astype(<span class="bu">int</span>)</span>
+<span id="cb20-6"><a href="#cb20-6"></a></span>
+<span id="cb20-7"><a href="#cb20-7"></a>yc <span class="op">=</span> penguins[<span class="st">"is_adelie"</span>]</span>
+<span id="cb20-8"><a href="#cb20-8"></a>Xc <span class="op">=</span> pd.get_dummies(penguins.drop(columns<span class="op">=</span>[<span class="st">"species"</span>, <span class="st">"is_adelie"</span>]), drop_first<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb20-9"><a href="#cb20-9"></a></span>
+<span id="cb20-10"><a href="#cb20-10"></a>Xc_train, Xc_test, yc_train, yc_test <span class="op">=</span> train_test_split(</span>
+<span id="cb20-11"><a href="#cb20-11"></a>    Xc, yc, test_size<span class="op">=</span><span class="fl">0.25</span>, stratify<span class="op">=</span>yc, random_state<span class="op">=</span><span class="dv">42</span></span>
+<span id="cb20-12"><a href="#cb20-12"></a>)</span>
+<span id="cb20-13"><a href="#cb20-13"></a></span>
+<span id="cb20-14"><a href="#cb20-14"></a><span class="co"># baseline single tree for comparison</span></span>
+<span id="cb20-15"><a href="#cb20-15"></a>base_clf <span class="op">=</span> DecisionTreeClassifier(max_depth<span class="op">=</span><span class="dv">3</span>, random_state<span class="op">=</span><span class="dv">42</span>)</span>
+<span id="cb20-16"><a href="#cb20-16"></a>base_clf.fit(Xc_train, yc_train)</span>
+<span id="cb20-17"><a href="#cb20-17"></a>acc_base <span class="op">=</span> accuracy_score(yc_test, base_clf.predict(Xc_test))</span>
+<span id="cb20-18"><a href="#cb20-18"></a></span>
+<span id="cb20-19"><a href="#cb20-19"></a><span class="co"># random-forest</span></span>
+<span id="cb20-20"><a href="#cb20-20"></a>rf_clf <span class="op">=</span> RandomForestClassifier(</span>
+<span id="cb20-21"><a href="#cb20-21"></a>    n_estimators<span class="op">=</span><span class="dv">200</span>,</span>
+<span id="cb20-22"><a href="#cb20-22"></a>    max_depth<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb20-23"><a href="#cb20-23"></a>    random_state<span class="op">=</span><span class="dv">42</span>,</span>
+<span id="cb20-24"><a href="#cb20-24"></a>    n_jobs<span class="op">=-</span><span class="dv">1</span>,</span>
+<span id="cb20-25"><a href="#cb20-25"></a>)</span>
+<span id="cb20-26"><a href="#cb20-26"></a>rf_clf.fit(Xc_train, yc_train)</span>
+<span id="cb20-27"><a href="#cb20-27"></a></span>
+<span id="cb20-28"><a href="#cb20-28"></a><span class="co"># accuracy</span></span>
+<span id="cb20-29"><a href="#cb20-29"></a>y_pred_rf <span class="op">=</span> rf_clf.predict(Xc_test)</span>
+<span id="cb20-30"><a href="#cb20-30"></a>acc_rf <span class="op">=</span> accuracy_score(yc_test, y_pred_rf)</span>
+<span id="cb20-31"><a href="#cb20-31"></a><span class="bu">print</span>(<span class="ss">f"single tree accuracy = </span><span class="sc">{</span>acc_base<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb20-32"><a href="#cb20-32"></a><span class="bu">print</span>(<span class="ss">f"random-forest accuracy = </span><span class="sc">{</span>acc_rf<span class="sc">:.3f}</span><span class="ss">"</span>)</span>
+<span id="cb20-33"><a href="#cb20-33"></a></span>
+<span id="cb20-34"><a href="#cb20-34"></a><span class="co"># feature-importance plot</span></span>
+<span id="cb20-35"><a href="#cb20-35"></a>importances <span class="op">=</span> (</span>
+<span id="cb20-36"><a href="#cb20-36"></a>    pd.Series(rf_clf.feature_importances_, index<span class="op">=</span>Xc.columns)</span>
+<span id="cb20-37"><a href="#cb20-37"></a>      .sort_values()</span>
+<span id="cb20-38"><a href="#cb20-38"></a>)</span>
+<span id="cb20-39"><a href="#cb20-39"></a></span>
+<span id="cb20-40"><a href="#cb20-40"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">5</span>))</span>
+<span id="cb20-41"><a href="#cb20-41"></a>importances.tail(<span class="dv">15</span>).plot.barh(ax<span class="op">=</span>ax)   <span class="co"># show top 15</span></span>
+<span id="cb20-42"><a href="#cb20-42"></a>ax.set_xlabel(<span class="st">"mean decrease in impurity"</span>)</span>
+<span id="cb20-43"><a href="#cb20-43"></a>ax.set_title(<span class="st">"penguins – feature importance (RF)"</span>)</span>
+<span id="cb20-44"><a href="#cb20-44"></a>plt.tight_layout()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>single tree accuracy = 0.952
+random-forest accuracy = 0.976</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="tirgul_10_files/figure-html/cell-13-output-2.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="cell" data-execution_count="30">
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb22-1"><a href="#cb22-1"></a><span class="co"># ----- regression forest on california housing ------------------------------</span></span>
+<span id="cb22-2"><a href="#cb22-2"></a>rf_reg <span class="op">=</span> RandomForestRegressor(</span>
+<span id="cb22-3"><a href="#cb22-3"></a>    n_estimators<span class="op">=</span><span class="dv">200</span>,</span>
+<span id="cb22-4"><a href="#cb22-4"></a>    max_depth<span class="op">=</span><span class="va">None</span>,</span>
+<span id="cb22-5"><a href="#cb22-5"></a>    random_state<span class="op">=</span><span class="dv">42</span>,</span>
+<span id="cb22-6"><a href="#cb22-6"></a>    n_jobs<span class="op">=-</span><span class="dv">1</span>,</span>
+<span id="cb22-7"><a href="#cb22-7"></a>)</span>
+<span id="cb22-8"><a href="#cb22-8"></a>rf_reg.fit(X_train, y_train)</span>
+<span id="cb22-9"><a href="#cb22-9"></a></span>
+<span id="cb22-10"><a href="#cb22-10"></a><span class="co"># test metrics</span></span>
+<span id="cb22-11"><a href="#cb22-11"></a>y_pred_rf <span class="op">=</span> rf_reg.predict(X_test)</span>
+<span id="cb22-12"><a href="#cb22-12"></a>rmse_rf <span class="op">=</span> mean_squared_error(y_test, y_pred_rf, squared<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb22-13"><a href="#cb22-13"></a>r2_rf   <span class="op">=</span> r2_score(y_test, y_pred_rf)</span>
+<span id="cb22-14"><a href="#cb22-14"></a><span class="bu">print</span>(<span class="ss">f"random-forest RMSE = </span><span class="sc">{</span>rmse_rf<span class="sc">:.3f}</span><span class="ss"> (single tree was </span><span class="sc">{</span>rmse_best<span class="sc">:.3f}</span><span class="ss">)"</span>)</span>
+<span id="cb22-15"><a href="#cb22-15"></a><span class="bu">print</span>(<span class="ss">f"random-forest  R²  = </span><span class="sc">{</span>r2_rf<span class="sc">:.3f}</span><span class="ss"> (single tree was </span><span class="sc">{</span>r2_best<span class="sc">:.3f}</span><span class="ss">)"</span>)</span>
+<span id="cb22-16"><a href="#cb22-16"></a></span>
+<span id="cb22-17"><a href="#cb22-17"></a><span class="co"># importance plot</span></span>
+<span id="cb22-18"><a href="#cb22-18"></a>importances_reg <span class="op">=</span> pd.Series(rf_reg.feature_importances_, index<span class="op">=</span>X.columns).sort_values()</span>
+<span id="cb22-19"><a href="#cb22-19"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">5</span>))</span>
+<span id="cb22-20"><a href="#cb22-20"></a>importances_reg.tail(<span class="dv">15</span>).plot.barh(ax<span class="op">=</span>ax)</span>
+<span id="cb22-21"><a href="#cb22-21"></a>ax.set_xlabel(<span class="st">"mean decrease in impurity"</span>)</span>
+<span id="cb22-22"><a href="#cb22-22"></a>ax.set_title(<span class="st">"california – feature importance (RF)"</span>)</span>
+<span id="cb22-23"><a href="#cb22-23"></a>plt.tight_layout()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>random-forest RMSE = 0.502 (single tree was 0.611)
+random-forest  R²  = 0.809 (single tree was 0.718)</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="tirgul_10_files/figure-html/cell-14-output-2.png" class="img-fluid"></p>
+</div>
+</div>
+<section id="permutation-importance-a-performance-based-metric" class="level3" data-number="13.2.1">
+<h3 data-number="13.2.1" class="anchored" data-anchor-id="permutation-importance-a-performance-based-metric"><span class="header-section-number">13.2.1</span> Permutation importance – a performance-based metric</h3>
+<ul>
+<li><strong>What it is</strong> – After the model is trained, we <strong>shuffle</strong> one feature column at a time in the <strong>held-out</strong> data and measure how much the score (accuracy for classifiers, (R^2) for regressors) drops.<br>
+</li>
+<li><strong>Why it matters</strong> –
+<ul>
+<li><em>Model-agnostic:</em> works for any fitted estimator, tree or otherwise.<br>
+</li>
+<li><em>Less biased:</em> doesn’t favour high-cardinality or continuous features the way impurity-based importance often does.<br>
+</li>
+</ul></li>
+<li><strong>Caveats</strong> –
+<ul>
+<li>Correlated predictors can share information → shuffling one may show little drop even if the group is crucial.<br>
+</li>
+<li>Computationally heavier: needs many re-evaluations (<code>n_repeats</code>).<br>
+</li>
+</ul></li>
+<li><strong>Interpretation</strong> – Larger mean drop ⇒ the model relied heavily on that feature. A near-zero (or negative) value ⇒ feature adds little unique information.</li>
+</ul>
+<div class="cell" data-execution_count="32">
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1"></a><span class="co"># permutation importance on the classification forest</span></span>
+<span id="cb24-2"><a href="#cb24-2"></a><span class="im">from</span> sklearn.inspection <span class="im">import</span> permutation_importance</span>
+<span id="cb24-3"><a href="#cb24-3"></a></span>
+<span id="cb24-4"><a href="#cb24-4"></a>result <span class="op">=</span> permutation_importance(</span>
+<span id="cb24-5"><a href="#cb24-5"></a>    rf_clf,</span>
+<span id="cb24-6"><a href="#cb24-6"></a>    Xc_test,</span>
+<span id="cb24-7"><a href="#cb24-7"></a>    yc_test,</span>
+<span id="cb24-8"><a href="#cb24-8"></a>    n_repeats<span class="op">=</span><span class="dv">50</span>,</span>
+<span id="cb24-9"><a href="#cb24-9"></a>    n_jobs<span class="op">=-</span><span class="dv">1</span>,</span>
+<span id="cb24-10"><a href="#cb24-10"></a>    random_state<span class="op">=</span><span class="dv">42</span>,</span>
+<span id="cb24-11"><a href="#cb24-11"></a>)</span>
+<span id="cb24-12"><a href="#cb24-12"></a></span>
+<span id="cb24-13"><a href="#cb24-13"></a>perm_imp <span class="op">=</span> (</span>
+<span id="cb24-14"><a href="#cb24-14"></a>    pd.Series(result.importances_mean, index<span class="op">=</span>Xc.columns)</span>
+<span id="cb24-15"><a href="#cb24-15"></a>      .sort_values()</span>
+<span id="cb24-16"><a href="#cb24-16"></a>)</span>
+<span id="cb24-17"><a href="#cb24-17"></a></span>
+<span id="cb24-18"><a href="#cb24-18"></a><span class="co"># bar plot – compare with impurity importance</span></span>
+<span id="cb24-19"><a href="#cb24-19"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">5</span>))</span>
+<span id="cb24-20"><a href="#cb24-20"></a>perm_imp.tail(<span class="dv">15</span>).plot.barh(ax<span class="op">=</span>ax)</span>
+<span id="cb24-21"><a href="#cb24-21"></a>ax.set_xlabel(<span class="st">"mean accuracy drop when permuted"</span>)</span>
+<span id="cb24-22"><a href="#cb24-22"></a>ax.set_title(<span class="st">"penguins – permutation importance (RF)"</span>)</span>
+<span id="cb24-23"><a href="#cb24-23"></a>plt.tight_layout()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="tirgul_10_files/figure-html/cell-15-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<div class="cell" data-execution_count="33">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1"></a><span class="co"># permutation importance on the regression forest</span></span>
+<span id="cb25-2"><a href="#cb25-2"></a><span class="im">from</span> sklearn.inspection <span class="im">import</span> permutation_importance</span>
+<span id="cb25-3"><a href="#cb25-3"></a></span>
+<span id="cb25-4"><a href="#cb25-4"></a>result_reg <span class="op">=</span> permutation_importance(</span>
+<span id="cb25-5"><a href="#cb25-5"></a>    rf_reg,</span>
+<span id="cb25-6"><a href="#cb25-6"></a>    X_test,</span>
+<span id="cb25-7"><a href="#cb25-7"></a>    y_test,</span>
+<span id="cb25-8"><a href="#cb25-8"></a>    n_repeats<span class="op">=</span><span class="dv">50</span>,</span>
+<span id="cb25-9"><a href="#cb25-9"></a>    n_jobs<span class="op">=-</span><span class="dv">1</span>,</span>
+<span id="cb25-10"><a href="#cb25-10"></a>    random_state<span class="op">=</span><span class="dv">42</span>,</span>
+<span id="cb25-11"><a href="#cb25-11"></a>)</span>
+<span id="cb25-12"><a href="#cb25-12"></a></span>
+<span id="cb25-13"><a href="#cb25-13"></a>perm_imp_reg <span class="op">=</span> (</span>
+<span id="cb25-14"><a href="#cb25-14"></a>    pd.Series(result_reg.importances_mean, index<span class="op">=</span>X.columns)</span>
+<span id="cb25-15"><a href="#cb25-15"></a>      .sort_values()</span>
+<span id="cb25-16"><a href="#cb25-16"></a>)</span>
+<span id="cb25-17"><a href="#cb25-17"></a></span>
+<span id="cb25-18"><a href="#cb25-18"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">6</span>, <span class="dv">5</span>))</span>
+<span id="cb25-19"><a href="#cb25-19"></a>perm_imp_reg.tail(<span class="dv">15</span>).plot.barh(ax<span class="op">=</span>ax)</span>
+<span id="cb25-20"><a href="#cb25-20"></a>ax.set_xlabel(<span class="st">"mean R² drop when permuted"</span>)</span>
+<span id="cb25-21"><a href="#cb25-21"></a>ax.set_title(<span class="st">"california – permutation importance (RF)"</span>)</span>
+<span id="cb25-22"><a href="#cb25-22"></a>plt.tight_layout()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="tirgul_10_files/figure-html/cell-16-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="../../tirgul/tirgul_9/regularized_regression.html" class="pagination-link">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">12</span>&nbsp; <span class="chapter-title">Regularization</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+  </div>
+</nav>
+</div> <!-- /content -->
+
+
+
+</body></html>

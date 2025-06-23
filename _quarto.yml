@@ -24,6 +24,7 @@ book:
       - tirgul/tirgul_8/logistic_regression.ipynb
       - tirgul/tirgul_9/multiple_regression.ipynb
       - tirgul/tirgul_9/regularized_regression.ipynb
+      - tirgul/tirgul_10/tirgul_10.ipynb
     
 
 
