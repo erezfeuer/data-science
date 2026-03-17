@@ -1,0 +1,27 @@
+/*-- scss:rules --*/
+
+/* Keep the TA sequence visible without making it the main title. */
+.chapter-meta {
+  color: #6c757d;
+  font-size: 0.75em;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  margin-left: 0.35rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.quarto-title-block .chapter-meta,
+.sidebar .chapter-meta,
+.breadcrumb .chapter-meta {
+  opacity: 0.8;
+}
+
+#title-block-header {
+  margin-bottom: 1.5rem;
+}
+
+.quarto-title-banner,
+.quarto-title-block {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
