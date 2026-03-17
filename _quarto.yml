@@ -10,6 +10,7 @@ book:
   # favicon: archive/clock-history.png
   chapters:
     - index.qmd
+    - setup.qmd
     - part: "Tirgul"
       chapters:
       - tirgul/tirgul_1/tutorial_1.ipynb
@@ -65,7 +66,6 @@ format:
     documentclass: scrreprt
 
       
-
 
 
 
