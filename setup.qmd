@@ -1,0 +1,124 @@
+# Software Setup
+
+Before the first class, please install the tools below and make sure they work on your laptop.
+
+## What You Need
+
+1. A [GitHub account](https://github.com/){target="_blank"}
+2. [Anaconda](https://www.anaconda.com/download){target="_blank"}
+3. [Visual Studio Code](https://code.visualstudio.com/){target="_blank"}
+4. These VS Code extensions:
+   - `Python`
+   - `Jupyter`
+   - `GitHub Copilot`
+   - `Data Wrangler`
+   - `Rainbow CSV`
+
+## Recommended Installation Order
+
+Install the tools in this order:
+
+1. Create a GitHub account.
+2. Install Anaconda.
+3. Install VS Code.
+4. Open VS Code and sign in with your GitHub account.
+5. Install the required extensions.
+
+## Why Install VS Code Separately?
+
+Some Anaconda installations include VS Code, but for this course I recommend installing VS Code directly from the official VS Code website anyway.
+
+This gives everyone the same application, makes extension installation more predictable, and avoids confusion if the Anaconda-bundled version is outdated or missing features.
+
+## Anaconda
+
+Install Anaconda first. It includes Python and the scientific packages we will use in the course.
+
+During installation:
+
+- Accept the default installation unless you have a specific reason not to.
+- If the installer asks whether to add Anaconda to your `PATH`, you can leave that unchecked.
+
+VS Code can usually detect Anaconda environments without adding Anaconda to `PATH`, so `PATH` is not required for this course setup.
+
+## VS Code
+
+Install VS Code from the official website:
+
+<a href="https://code.visualstudio.com/" target="_blank">https://code.visualstudio.com/</a>
+
+After installation:
+
+1. Open VS Code.
+2. Sign in with your GitHub account.
+3. Install the required extensions.
+
+## Required VS Code Extensions
+
+Open the Extensions view in VS Code and install:
+
+- `Python`
+- `Jupyter`
+- `GitHub Copilot`
+- `Data Wrangler`
+- `Rainbow CSV`
+
+How to open the Extensions view:
+
+1. Open VS Code.
+2. Click the Extensions icon in the left sidebar.
+3. Search for each extension by name.
+4. Click `Install`.
+
+## Python Extension
+
+Install the `Python` extension in VS Code.
+
+It helps VS Code find Python interpreters and Conda environments, and it enables `Python: Select Interpreter`, which you may need if VS Code does not detect Anaconda automatically.
+
+## Jupyter
+
+Anaconda already includes Jupyter-related Python packages, but in VS Code you should also install the `Jupyter` extension so notebooks open and run correctly inside the editor.
+
+## Selecting the Correct Python Interpreter in VS Code
+
+In many cases VS Code will detect the Anaconda Python interpreter automatically. If it does not, select it manually:
+
+1. Open VS Code.
+2. Press `Cmd+Shift+P` on macOS or `Ctrl+Shift+P` on Windows.
+3. Search for `Python: Select Interpreter`.
+4. Choose the Anaconda interpreter or Conda environment from the list.
+
+If you are working inside a notebook and VS Code asks you to choose a kernel, select the kernel that belongs to the same Anaconda or Conda environment.
+
+If you do not see it in the list:
+
+1. Open the Command Palette again.
+2. Run `Python: Select Interpreter`.
+3. Choose `Enter interpreter path`.
+4. Browse to your Anaconda Python executable.
+
+Typical locations are similar to:
+
+- Windows: `C:\Users\YOUR_USERNAME\anaconda3\python.exe`
+- macOS: `/Users/YOUR_USERNAME/anaconda3/bin/python`
+
+## First Check
+
+After everything is installed:
+
+1. Open VS Code.
+2. Create a new folder on your computer for the course, for example `data-science-course`.
+3. In VS Code, open that folder with `File -> Open Folder`.
+4. Create a new file named `test.ipynb`.
+5. If VS Code asks how to open the file, choose the notebook option.
+6. Select the Anaconda Python interpreter.
+7. If prompted, choose the matching Jupyter kernel.
+8. Run a cell with:
+
+```python
+import sys
+print(sys.executable)
+```
+
+If the notebook runs successfully, your setup is ready.
