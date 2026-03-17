@@ -1,1 +1,18 @@
-# 71253 {.unnumbered}
+# Course Overview {.unnumbered}
+
+This site contains the course materials for Introduction to Data Science.
+
+## Start Here
+
+- Read the [Software Setup](setup.qmd) page before the first class.
+- Use the sidebar to navigate through the practice sessions in order.
+- Open notebooks directly from the relevant chapter page.
+
+## Course Structure
+
+The practice sessions are organized by subject, while the `TA` label in each chapter title keeps the teaching order visible.
+
+## Notes
+
+- The site is intended to be followed in sequence.
+- If you are looking for installation instructions, start with the setup page.
